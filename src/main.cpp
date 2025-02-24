@@ -75,7 +75,7 @@ static TaskHandle_t wifiHandle = NULL;
 HardwareSerial interSerial(2);
 
 // Get Hub's own MAC address
-void printMAC(const uint8_t * mac_addr){
+void printMAC(const uint8_t * mac_addr) {
     char macStr[18];
     snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
              mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
@@ -159,20 +159,19 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 // TODO: Implement start and end markers
 void sendSerial(void *parameter) {
     sensorDataSerial serialPackage;
-    strcpy(serialPackage.nodeID, dataInstance.nodeID);
-    Serial.println(serialPackage.nodeID);
-    serialPackage.temp = dataInstance.temp;
-    serialPackage.humidity = dataInstance.humidity;
-    serialPackage.moisture = dataInstance.moisture;
     while (true) {
-        if(xQueueReceive(msgQueue, (void *)&serialPackage, 0) == pdTRUE) {
+        if(xQueueReceive(msgQueue, (void *)&dataInstance, 0) == pdTRUE) {
+            strcpy(serialPackage.nodeID, dataInstance.nodeID);
+            serialPackage.temp = dataInstance.temp;
+            serialPackage.humidity = dataInstance.humidity;
+            serialPackage.moisture = dataInstance.moisture;
             interSerial.write((uint8_t*)&serialPackage, sizeof(serialPackage));
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
 
-void initESP_NOW(){
+void initESP_NOW() {
     // Init ESP-NOW
     if (esp_now_init() != ESP_OK) {
       Serial.println("Error initializing ESP-NOW");
