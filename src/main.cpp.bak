@@ -4,7 +4,9 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 #include <esp_now.h>
-#include "config.h"
+
+#define BAUD_RATE 115200
+#define RX_BUFFER_SIZE 2048
 
 // Define two possible message types 
 enum MessageType {PAIRING, DATA};
@@ -185,11 +187,6 @@ void startConnection(void *parameter) {
     while (true) {
         if (interSerial.available()) {
             rb = interSerial.read();
-            if (rb == 'T') {
-                Serial.println("Received test connection request from MQTT hub");
-                interSerial.write('A'); // Send 'A' for Acknowledge
-                Serial.println("Sent acknowledgment response");
-            }
             if (rb == '`') {
                 bytesRead = interSerial.readBytes(reinterpret_cast<char*>(&wifiProfile), sizeof(wifiProfile));
                 WiFi.begin(wifiProfile.wifiSSID, wifiProfile.wifiPass);
@@ -224,18 +221,6 @@ void startConnection(void *parameter) {
     initESP_NOW();
 
     vTaskSuspend(NULL);
-}
-void handleUartCommands() {
-    if (Serial2.available()) {
-        char command = Serial2.read();
-        
-        // Handle test connection request
-        if (command == 'T') {
-        Serial.println("Received test connection request from MQTT hub");
-        Serial2.write('A'); // Send 'A' for Acknowledge
-        Serial.println("Sent acknowledgment response");
-        }
-    }
 }
 
 void setup() {
@@ -274,3 +259,4 @@ void setup() {
  
 void loop() {
 }
+
